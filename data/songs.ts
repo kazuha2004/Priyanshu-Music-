@@ -43,13 +43,11 @@ export const RADIO_CHANNELS: Record<number, { name: string; categories: string[]
 };
 
 export function getFrequencyQueues(): Record<string, Song[]> {
-  const remaining = [...SONGS];
   const queues: Record<string, Song[]> = {};
 
-  RADIO_FREQUENCIES.forEach((frequency, channelIndex) => {
+  RADIO_FREQUENCIES.forEach((frequency) => {
     const channel = RADIO_CHANNELS[frequency];
-    const targetSize = channelIndex < 6 ? 6 : 5;
-    const ranked = remaining
+    const ranked = SONGS
       .map((song, index) => {
         const categoryScore = song.category?.filter((category) =>
           channel.categories.includes(category)
@@ -61,12 +59,8 @@ export function getFrequencyQueues(): Record<string, Song[]> {
       })
       .sort((a, b) => b.score - a.score || a.index - b.index);
 
-    const selected = ranked.slice(0, targetSize).map(({ song }) => song);
+    const selected = ranked.slice(0, 6).map(({ song }) => song);
     queues[String(frequency)] = selected;
-    const selectedIds = new Set(selected.map((song) => song.id));
-    for (let index = remaining.length - 1; index >= 0; index -= 1) {
-      if (selectedIds.has(remaining[index].id)) remaining.splice(index, 1);
-    }
   });
 
   return queues;

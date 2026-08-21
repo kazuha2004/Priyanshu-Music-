@@ -81,6 +81,10 @@ export default function Home() {
 
   const handleNext = useCallback(() => {
     if (queue.length === 0) return;
+    if (currentIndex === -1) {
+      selectSong(queue[0]);
+      return;
+    }
     if (currentIndex < queue.length - 1) {
       selectSong(queue[currentIndex + 1]);
       return;
@@ -157,6 +161,7 @@ export default function Home() {
         state === YT_PLAYER_STATE.PAUSED ||
         state === YT_PLAYER_STATE.ENDED
       ) {
+        if (state === YT_PLAYER_STATE.PAUSED && document.hidden) return;
         setIsPlaying(false);
         setIsBuffering(false);
         if (state === YT_PLAYER_STATE.ENDED) {
@@ -167,6 +172,50 @@ export default function Home() {
     },
     [handleNext]
   );
+
+  useEffect(() => {
+    if (typeof navigator === "undefined" || !navigator.mediaSession) return;
+
+    navigator.mediaSession.metadata = currentSong
+      ? new MediaMetadata({
+          title: currentSong.title,
+          artist: currentSong.artist ?? "Soulstation",
+          album: `Soulstation ${frequency.toFixed(1)} FM`,
+          artwork: currentSong.artwork
+            ? [{ src: currentSong.artwork, sizes: "512x512" }]
+            : [],
+        })
+      : null;
+    navigator.mediaSession.playbackState = isPlaying ? "playing" : "paused";
+
+    const mediaSession = navigator.mediaSession;
+    const actions: Array<[MediaSessionAction, MediaSessionActionHandler]> = [
+      ["play", () => setIsPlaying(true)],
+      ["pause", () => setIsPlaying(false)],
+      ["nexttrack", handleNext],
+      ["previoustrack", handlePrev],
+      ["seekbackward", () => handleSeek(Math.max(currentTime - 10, 0))],
+      ["seekforward", () => handleSeek(Math.min(currentTime + 10, duration))],
+    ];
+
+    actions.forEach(([action, handler]) => {
+      try {
+        mediaSession.setActionHandler(action, handler);
+      } catch {
+        // Some browsers expose only a subset of Media Session actions.
+      }
+    });
+
+    return () => {
+      actions.forEach(([action]) => {
+        try {
+          mediaSession.setActionHandler(action, null);
+        } catch {
+          // Ignore unsupported actions during cleanup.
+        }
+      });
+    };
+  }, [currentSong, currentTime, duration, frequency, handleNext, handlePrev, handleSeek, isPlaying]);
 
   useEffect(() => {
     if (!hasStarted) return;

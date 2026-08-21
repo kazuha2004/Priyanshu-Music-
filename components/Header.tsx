@@ -152,6 +152,22 @@ export default function Header({
           Soulstation
         </div>
 
+        <div
+          className="mobile-live-status live-pill"
+          aria-label={isPlaying ? `${listenerCount} listeners active` : "Radio offline"}
+        >
+          <div
+            className="live-dot"
+            style={{
+              animation: isPlaying
+                ? "warm-flicker 1.5s ease-in-out infinite"
+                : "none",
+              background: isPlaying ? "var(--rust)" : "var(--text-muted)",
+            }}
+          />
+          <span>{isPlaying ? listenerCount : "OFF"}</span>
+        </div>
+
         {/* Mobile menu */}
         <div className="flex items-center gap-1">
           <button

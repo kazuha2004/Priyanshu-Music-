@@ -156,6 +156,22 @@ export default function YouTubePlayer({
     }
   }, [isPlaying, initialized, playerRef]);
 
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (
+        document.visibilityState === "visible" &&
+        isPlaying &&
+        initialized &&
+        playerRef.current
+      ) {
+        playerRef.current.playVideo();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
+  }, [initialized, isPlaying, playerRef]);
+
   // Handle volume changes
   useEffect(() => {
     if (!initialized || !playerRef.current) return;

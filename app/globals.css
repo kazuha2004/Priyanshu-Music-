@@ -349,6 +349,13 @@ small, .muted { font-size: 12px; color: var(--text-muted); }
   background: var(--rust);
 }
 
+.mobile-live-status {
+  padding: 4px 7px;
+  gap: 4px;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+}
+
 /* ── Vinyl Disc ── */
 .vinyl-disc {
   border-radius: 50%;
