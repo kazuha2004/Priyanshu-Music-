@@ -13,11 +13,10 @@ import StationDrawer from "@/components/StationDrawer";
 import AboutPanel from "@/components/AboutPanel";
 import Hotspots from "@/components/Hotspots";
 
-import { SONGS, RADIO_FREQUENCIES, getFrequencyQueues, getSongsForStation, type Song, type Station } from "@/data/songs";
-import { YT_PLAYER_STATE, type YTPlayer } from "@/lib/youtube";
+import { SONGS, RADIO_FREQUENCIES, getAudioUrl, getFrequencyQueues, getSongsForStation, type Song, type Station } from "@/data/songs";
+import type { AudioPlayerHandle } from "@/components/AudioPlayer";
 
-// Lazy-load the YouTube player (reduces initial JS)
-const YouTubePlayer = dynamic(() => import("@/components/YouTubePlayer"), {
+const AudioPlayer = dynamic(() => import("@/components/AudioPlayer"), {
   ssr: false,
 });
 
@@ -41,7 +40,7 @@ export default function Home() {
   const [playerError, setPlayerError] = useState(false);
   const [frequency, setFrequency] = useState<number>(96.6);
   const [listenerCount, setListenerCount] = useState(1);
-  const playerRef = useRef<YTPlayer | null>(null);
+  const playerRef = useRef<AudioPlayerHandle | null>(null);
 
   // ── Station / atmosphere ──
   const [currentStation, setCurrentStation] = useState<Station | null>(null);
@@ -64,7 +63,7 @@ export default function Home() {
   const selectSong = useCallback(
     (song: Song | undefined) => {
       if (!song) return;
-      if (!song.youtubeId) {
+      if (!getAudioUrl(song)) {
         setPlayerError(true);
         setCurrentSong(song);
         setIsPlaying(false);
@@ -106,7 +105,7 @@ export default function Home() {
     if (queue.length === 0) return;
     // If more than 3s in, restart; otherwise go previous
     if (currentTime > 3 && playerRef.current) {
-      playerRef.current.seekTo(0, true);
+      playerRef.current.seekTo(0);
       return;
     }
     const prevIndex = currentIndex > 0 ? currentIndex - 1 : queue.length - 1;
@@ -115,12 +114,34 @@ export default function Home() {
 
   const handleSeek = useCallback((t: number) => {
     if (!playerRef.current) return;
-    playerRef.current.seekTo(t, true);
+    playerRef.current.seekTo(t);
     setCurrentTime(t);
   }, []);
 
   const handleVolumeChange = useCallback((v: number) => {
     setVolume(v);
+  }, []);
+
+  const handlePlay = useCallback(() => {
+    setPlayerError(false);
+    const playRequest = playerRef.current?.play();
+    if (playRequest) {
+      playRequest.catch(() => setIsPlaying(false));
+    }
+    setIsPlaying(true);
+  }, []);
+
+  const handleAudioPlaying = useCallback(() => {
+    setIsPlaying(true);
+    setIsBuffering(false);
+  }, []);
+
+  const handleAudioPause = useCallback(() => {
+    setIsPlaying(false);
+  }, []);
+
+  const handleAudioWaiting = useCallback(() => {
+    setIsBuffering(true);
   }, []);
 
   const handleTune = useCallback((nextFrequency: number) => {
@@ -150,29 +171,6 @@ export default function Home() {
     setIsBuffering(false);
   }, []);
 
-  const handleStateChange = useCallback(
-    (state: number) => {
-      if (state === YT_PLAYER_STATE.PLAYING) {
-        setIsPlaying(true);
-        setIsBuffering(false);
-      } else if (state === YT_PLAYER_STATE.BUFFERING) {
-        setIsBuffering(true);
-      } else if (
-        state === YT_PLAYER_STATE.PAUSED ||
-        state === YT_PLAYER_STATE.ENDED
-      ) {
-        if (state === YT_PLAYER_STATE.PAUSED && document.hidden) return;
-        setIsPlaying(false);
-        setIsBuffering(false);
-        if (state === YT_PLAYER_STATE.ENDED) {
-          // Auto-advance
-          handleNext();
-        }
-      }
-    },
-    [handleNext]
-  );
-
   useEffect(() => {
     if (typeof navigator === "undefined" || !navigator.mediaSession) return;
 
@@ -190,7 +188,7 @@ export default function Home() {
 
     const mediaSession = navigator.mediaSession;
     const actions: Array<[MediaSessionAction, MediaSessionActionHandler]> = [
-      ["play", () => setIsPlaying(true)],
+      ["play", handlePlay],
       ["pause", () => setIsPlaying(false)],
       ["nexttrack", handleNext],
       ["previoustrack", handlePrev],
@@ -215,7 +213,7 @@ export default function Home() {
         }
       });
     };
-  }, [currentSong, currentTime, duration, frequency, handleNext, handlePrev, handleSeek, isPlaying]);
+  }, [currentSong, currentTime, duration, frequency, handleNext, handlePlay, handlePrev, handleSeek, isPlaying]);
 
   useEffect(() => {
     if (!hasStarted) return;
@@ -348,7 +346,7 @@ export default function Home() {
           duration={duration}
           volume={volume}
           playerRef={playerRef}
-          onPlay={() => setIsPlaying(true)}
+          onPlay={handlePlay}
           onPause={() => setIsPlaying(false)}
           onNext={handleNext}
           onPrev={handlePrev}
@@ -370,7 +368,7 @@ export default function Home() {
           isBuffering={isBuffering}
           currentTime={currentTime}
           duration={duration}
-          onPlay={() => setIsPlaying(true)}
+          onPlay={handlePlay}
           onPause={() => setIsPlaying(false)}
           onNext={handleNext}
           onPrev={handlePrev}
@@ -385,13 +383,16 @@ export default function Home() {
       )}
 
       {/* Layer 7: YouTube player (hidden but required) */}
-      {hasStarted && currentSong?.youtubeId && (
-        <YouTubePlayer
-          videoId={currentSong.youtubeId}
+      {hasStarted && currentSong && getAudioUrl(currentSong) && (
+        <AudioPlayer
+          audioUrl={getAudioUrl(currentSong)!}
           isPlaying={isPlaying}
           volume={volume}
           onReady={handlePlayerReady}
-          onStateChange={handleStateChange}
+          onPlaying={handleAudioPlaying}
+          onPause={handleAudioPause}
+          onWaiting={handleAudioWaiting}
+          onEnded={handleNext}
           onTimeUpdate={handleTimeUpdate}
           onError={handlePlayerError}
           playerRef={playerRef}

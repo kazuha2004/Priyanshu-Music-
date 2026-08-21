@@ -1,6 +1,5 @@
 /**
  * Song catalogue and station definitions for Soulstation.
- * YouTube IDs are real and verified. Do not invent video IDs.
  * Edit this file to add/remove songs — no UI components need to change.
  */
 
@@ -14,6 +13,7 @@ export type Song = {
   mood?: string[];
   category?: string[];
   youtubeId?: string | null;
+  audioUrl?: string | null;
   youtubeUrl?: string | null;
   spotifyUrl?: string | null;
   youtubeMusicUrl?: string | null;
@@ -48,6 +48,7 @@ export function getFrequencyQueues(): Record<string, Song[]> {
   RADIO_FREQUENCIES.forEach((frequency) => {
     const channel = RADIO_CHANNELS[frequency];
     const ranked = SONGS
+      .filter((song) => Boolean(R2_AUDIO_FILES[song.id]))
       .map((song, index) => {
         const categoryScore = song.category?.filter((category) =>
           channel.categories.includes(category)
@@ -240,23 +241,6 @@ export const SONGS: Song[] = [
     artwork: null,
   },
 
-  {
-    id: "man-chala",
-    title: "Man Chala",
-    artist: "Saahel",
-    year: 2025,
-
-    mood: ["romantic", "love", "dreamy", "soft"],
-    category: ["indie", "love", "2020s"],
-
-    youtubeId: "QcTybVxkdsc",
-    youtubeUrl: "https://youtu.be/QcTybVxkdsc",
-
-    spotifyUrl: null,
-    youtubeMusicUrl: null,
-    artwork: null,
-  },
-
   { id: "tere-bina-na-guzara-e", title: "Tere Bina Na Guzara E", artist: "Josh Brar", year: 2024, mood: ["romantic", "emotional", "love"], category: ["punjabi", "love", "2020s"], youtubeId: "aYG6oEUXyuQ", youtubeUrl: "https://youtu.be/aYG6oEUXyuQ", spotifyUrl: null, youtubeMusicUrl: null, artwork: null },
   { id: "goat", title: "G.O.A.T.", artist: "Diljit Dosanjh", year: 2020, mood: ["confident", "energetic", "party"], category: ["punjabi", "party", "2020s"], youtubeId: "cl0a3i2wFcc", youtubeUrl: "https://youtu.be/cl0a3i2wFcc", spotifyUrl: null, youtubeMusicUrl: null, artwork: null },
   { id: "boyfriend", title: "Boyfriend", artist: "Karan Aujla, Sunanda", year: 2025, mood: ["romantic", "energetic", "love"], category: ["punjabi", "love", "2020s"], youtubeId: "5GCfYLguTIs", youtubeUrl: "https://youtu.be/5GCfYLguTIs", spotifyUrl: null, youtubeMusicUrl: null, artwork: null },
@@ -273,7 +257,6 @@ export const SONGS: Song[] = [
   { id: "ik-vaari-aa", title: "Ik Vaari Aa", artist: "Arijit Singh", film: "Raabta", year: 2017, mood: ["romantic", "dreamy", "love"], category: ["bollywood", "2010s", "love"], youtubeId: "zXLgYBSdv74", youtubeUrl: "https://youtu.be/zXLgYBSdv74", spotifyUrl: null, youtubeMusicUrl: null, artwork: null },
   { id: "jab-tak", title: "Jab Tak", artist: "Armaan Malik", film: "M.S. Dhoni - The Untold Story", year: 2016, mood: ["romantic", "emotional", "love"], category: ["bollywood", "2010s", "love"], youtubeId: "K-Ts-NFR62o", youtubeUrl: "https://youtu.be/K-Ts-NFR62o", spotifyUrl: null, youtubeMusicUrl: null, artwork: null },
   { id: "jo-tum-mere-ho", title: "Jo Tum Mere Ho", artist: "Anuv Jain", year: 2024, mood: ["romantic", "soft", "intimate", "dreamy"], category: ["indie", "love", "2020s"], youtubeId: "ilNt2bikxDI", youtubeUrl: "https://youtu.be/ilNt2bikxDI", spotifyUrl: null, youtubeMusicUrl: null, artwork: null },
-  { id: "tera-rastaa-chhodoon-na", title: "Tera Rastaa Chhodoon Na", artist: "Amitabh Bhattacharya", film: "Chennai Express", year: 2013, mood: ["romantic", "happy", "love"], category: ["bollywood", "2010s", "love"], youtubeId: "KOdPt6MkpiY", youtubeUrl: "https://youtu.be/KOdPt6MkpiY", spotifyUrl: null, youtubeMusicUrl: null, artwork: null },
   { id: "dil-ibaadat", title: "Dil Ibaadat", artist: "KK", film: "Tum Mile", year: 2009, mood: ["romantic", "emotional", "melancholic"], category: ["bollywood", "2000s", "love"], youtubeId: "U2QNhsAgIIE", youtubeUrl: "https://youtu.be/U2QNhsAgIIE", spotifyUrl: null, youtubeMusicUrl: null, artwork: null },
   { id: "teri-jhuki-nazar", title: "Teri Jhuki Nazar", artist: "Shafqat Amanat Ali", film: "Murder 3", year: 2013, mood: ["romantic", "emotional", "intense"], category: ["bollywood", "2010s", "love"], youtubeId: "xrSZLa14haA", youtubeUrl: "https://youtu.be/xrSZLa14haA", spotifyUrl: null, youtubeMusicUrl: null, artwork: null },
   { id: "phir-le-aya-dil", title: "Phir Le Aya Dil", artist: "Arijit Singh", film: "Barfi!", year: 2012, mood: ["romantic", "melancholic", "nostalgic"], category: ["bollywood", "2010s", "love"], youtubeId: "k6BnSIs3XUQ", youtubeUrl: "https://youtu.be/k6BnSIs3XUQ", spotifyUrl: null, youtubeMusicUrl: null, artwork: null },
@@ -283,6 +266,48 @@ export const SONGS: Song[] = [
   { id: "jhak-maar-ke", title: "Jhak Maar Ke", artist: "Neeraj Shridhar, Harshdeep Kaur", film: "Desi Boyz", year: 2011, mood: ["energetic", "playful", "party"], category: ["bollywood", "2010s", "party"], youtubeId: "R5CxtjmrIE4", youtubeUrl: "https://youtu.be/R5CxtjmrIE4", spotifyUrl: null, youtubeMusicUrl: null, artwork: null },
 ];
 
+const R2_AUDIO_BASE_URL = "https://pub-5ef359fff5274b2d95f090ecc084afcd.r2.dev";
+
+const R2_AUDIO_FILES: Record<string, string> = {
+  "arz-kiya-hai": "Arz Kiya Hai_320(KoshalWorld.Com).mp3",
+  bahara: "Bahara I Hate Luv Storys 320 Kbps.mp3",
+  boyfriend: "Boyfriend - Karan Aujla.mp3",
+  "dil-ibaadat": "Dil Ibaadat Tum Mile Original Motion Picturetrack 320 Kbps.mp3",
+  dooriyan: "Dooriyan Love Aaj Kal 320 Kbps.mp3",
+  "dooron-dooron": "Dooron Dooron Unplugged Paresh Pahuja 320 Kbps.mp3",
+  goat: "G.O.A.T - Diljit Dosanjh.mp3",
+  hosanna: "Hosanna Ekk Deewana Tha 320 Kbps.mp3",
+  "ik-vaari-aa": "Ik Vaari Aa Raabta 320 Kbps.mp3",
+  "jab-tak": "Jab Tak M.s. Dhoni The Untold Story 320 Kbps.mp3",
+  "jhak-maar-ke": "Jhak Maar Ke Desi Boyz 320 Kbps.mp3",
+  jhol: "Jhol_320(KoshalWorld.Com).mp3",
+  "jo-tum-mere-ho": "Jo Tum Mere Ho Anuv Jain 320 Kbps.mp3",
+  khat: "Khat Navjot Ahuja 320 Kbps.mp3",
+  mitwa: "Mitwa Kabhi Alvida Naa Kehna 320 Kbps.mp3",
+  "phir-le-aya-dil": "Phir Le Aya Dil Barfi 320 Kbps.mp3",
+  safar: "Safar (PenduJatt.Com.Se).mp3",
+  shaky: "Shaky_320(KoshalWorld.Com).mp3",
+  shararat: "Shararat Dhurandhar 320 Kbps.mp3",
+  sitaare: "Sitaare Ikkis 320 Kbps.mp3",
+  "sun-saawariya": "Sun Saawariya Accha Insaan (pagalall.com).mp3",
+  "tere-bina-na-guzara-e": "Tere Bina Na Guzara E - Josh Brar.mp3",
+  "teri-jhuki-nazar": "Teri Jhuki Nazar Murder 3 320 Kbps.mp3",
+  "tu-chodiyon-na": "Tu-Chodiyon-Na-Ronit-Vinta.mp3",
+  "tujhe-sochta-hoon": "Tujhe Sochta Hoon Jannat 2 Original Motion Picturetrack 320 Kbps.mp3",
+  "tum-ho": "Tum Ho Rockstar 320 Kbps.mp3",
+  "tum-se-hi": "Tum Se Hi Jab We Met 320 Kbps.mp3",
+  "tumhare-hi-rahenge-hum": "Tumhare Hi Rahenge Hum Stree 2 320 Kbps.mp3",
+  vaaroon: "Vaaroon Mirzapur 320 Kbps.mp3",
+  "zara-sa": "Zara Sa Jannat 320 Kbps.mp3",
+};
+
+export function getAudioUrl(song: Song): string | null {
+  const filename = R2_AUDIO_FILES[song.id];
+  return filename
+    ? `${R2_AUDIO_BASE_URL}/${encodeURIComponent(filename)}`
+    : null;
+}
+
 export function getSongsForFrequency(frequency: number): Song[] {
   return getFrequencyQueues()[String(frequency)] ?? SONGS;
 }
@@ -290,6 +315,7 @@ export function getSongsForFrequency(frequency: number): Song[] {
 /** Get songs for a given station */
 export function getSongsForStation(station: Station): Song[] {
   return SONGS.filter((song) => {
+    if (!R2_AUDIO_FILES[song.id]) return false;
     const moodMatch = song.mood?.some((m) => station.moods.includes(m));
     const catMatch = song.category?.some((c) => station.categories.includes(c));
     return moodMatch || catMatch;

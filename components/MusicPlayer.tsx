@@ -1,7 +1,8 @@
 "use client";
 
 import { useRef, useCallback } from "react";
-import { formatTime, type YTPlayer } from "@/lib/youtube";
+import { formatTime } from "@/lib/youtube";
+import type { AudioPlayerHandle } from "@/components/AudioPlayer";
 import type { Song } from "@/data/songs";
 
 interface MusicPlayerProps {
@@ -11,7 +12,7 @@ interface MusicPlayerProps {
   currentTime: number;
   duration: number;
   volume: number;
-  playerRef: React.MutableRefObject<YTPlayer | null>;
+  playerRef: React.MutableRefObject<AudioPlayerHandle | null>;
   onPlay: () => void;
   onPause: () => void;
   onNext: () => void;
