@@ -9,6 +9,10 @@ export const metadata: Metadata = {
     "An immersive internet radio experience. Sit down, pour a cup, and let the music fill the room.",
   keywords: ["indie music", "lo-fi", "internet radio", "atmospheric", "music player"],
   authors: [{ name: "Soulstation" }],
+  icons: {
+    icon: "/favicon.png",
+    apple: "/favicon.png",
+  },
   openGraph: {
     title: "Soulstation — An Atmospheric Music Room",
     description:

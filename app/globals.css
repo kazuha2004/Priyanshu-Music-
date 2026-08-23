@@ -1150,7 +1150,8 @@ small, .muted { font-size: 12px; color: var(--text-muted); }
 
 @media (max-width: 360px) {
   .mobile-header { grid-template-columns: auto minmax(0, 1fr) auto; }
-  .mobile-header .mobile-live-status { display: none; }
+  .mobile-header .mobile-time { display: none; }
+  .mobile-header .mobile-live-status { display: inline-flex; }
   .mobile-header .font-display { font-size: 16px !important; }
   .mobile-header .btn-ghost { padding-left: 4px !important; padding-right: 4px !important; }
   .mobile-player { left: 6px !important; right: 6px !important; padding-left: 7px !important; padding-right: 7px !important; }

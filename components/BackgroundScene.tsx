@@ -1,12 +1,13 @@
 "use client";
 
 import Image from "next/image";
+import { memo } from "react";
 
 interface BackgroundSceneProps {
   atmosphere?: "normal" | "rain" | "night";
 }
 
-export default function BackgroundScene({
+function BackgroundScene({
   atmosphere = "normal",
 }: BackgroundSceneProps) {
   return (
@@ -93,3 +94,5 @@ export default function BackgroundScene({
     </div>
   );
 }
+
+export default memo(BackgroundScene);

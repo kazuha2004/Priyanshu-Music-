@@ -1,12 +1,19 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { memo } from "react";
 
 interface AtmosphereProps {
   mode: "normal" | "rain" | "night";
 }
 
 const RAIN_DROPS = 55;
+const RAIN_STYLES = Array.from({ length: RAIN_DROPS }, (_, index) => ({
+  left: `${(index * 37) % 100}%`,
+  height: `${40 + ((index * 17) % 80)}px`,
+  animationDuration: `${0.6 + ((index * 13) % 80) / 100}s`,
+  animationDelay: `${((index * 19) % 200) / 100}s`,
+  opacity: 0.15 + ((index * 23) % 30) / 100,
+}));
 
 function RainLayer() {
   return (
@@ -15,31 +22,14 @@ function RainLayer() {
       style={{ zIndex: 2 }}
       aria-hidden="true"
     >
-      {Array.from({ length: RAIN_DROPS }, (_, i) => {
-        const left = Math.random() * 100;
-        const height = 40 + Math.random() * 80;
-        const duration = 0.6 + Math.random() * 0.8;
-        const delay = Math.random() * 2;
-        const opacity = 0.15 + Math.random() * 0.3;
-        return (
-          <div
-            key={i}
-            className="rain-drop"
-            style={{
-              left: `${left}%`,
-              height: `${height}px`,
-              animationDuration: `${duration}s`,
-              animationDelay: `${delay}s`,
-              opacity,
-            }}
-          />
-        );
-      })}
+      {RAIN_STYLES.map((style, index) => (
+        <div key={index} className="rain-drop" style={style} />
+      ))}
     </div>
   );
 }
 
-export default function Atmosphere({ mode }: AtmosphereProps) {
+function Atmosphere({ mode }: AtmosphereProps) {
   return (
     <>
       {/* Film grain — always present, very subtle */}
@@ -61,3 +51,5 @@ export default function Atmosphere({ mode }: AtmosphereProps) {
     </>
   );
 }
+
+export default memo(Atmosphere);

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { memo, useState, useEffect } from "react";
 
 interface HeaderProps {
   onOpenLibrary: () => void;
@@ -42,7 +42,7 @@ function LocalTime() {
   );
 }
 
-export default function Header({
+function Header({
   onOpenLibrary,
   onOpenStations,
   onOpenAbout,
@@ -191,3 +191,5 @@ export default function Header({
     </header>
   );
 }
+
+export default memo(Header);
