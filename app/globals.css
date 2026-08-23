@@ -983,6 +983,25 @@ small, .muted { font-size: 12px; color: var(--text-muted); }
 @media (max-width: 768px) {
   body { font-size: 14px; }
   .mobile-time span { font-size: 10px !important; letter-spacing: 0.04em !important; }
+  .mobile-header {
+    display: grid !important;
+    grid-template-columns: auto minmax(0, 1fr) auto auto;
+    gap: 8px;
+    padding-left: max(12px, env(safe-area-inset-left)) !important;
+    padding-right: max(12px, env(safe-area-inset-right)) !important;
+  }
+  .mobile-header .font-display {
+    min-width: 0;
+    overflow: hidden;
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .mobile-header .mobile-live-status,
+  .mobile-header > .flex:last-child,
+  .mobile-header > .flex:last-child .btn-ghost { min-width: 0; }
+  .mobile-header > .flex:last-child { display: flex; }
+  .mobile-header > .flex:last-child .btn-ghost { white-space: nowrap; }
   /* Make player feel tactile on mobile */
   [aria-label="Music player"] {
     left: 10px !important;
@@ -991,6 +1010,7 @@ small, .muted { font-size: 12px; color: var(--text-muted); }
     bottom: 70px !important;
     padding: 14px !important;
     border-radius: 12px !important;
+    max-width: calc(100vw - 20px);
     transform: none !important;
   }
   .drawer-panel { width: 100vw; }
@@ -1044,9 +1064,10 @@ small, .muted { font-size: 12px; color: var(--text-muted); }
 /* Galaxy S20 Ultra and similar narrow phones */
 @media (max-width: 430px) {
   html, body { min-width: 0; overflow-x: hidden; }
-  .mobile-header { gap: 8px; padding-left: 12px !important; padding-right: 10px !important; }
+  .mobile-header { gap: 5px; padding-left: 10px !important; padding-right: 8px !important; }
   .mobile-header .mobile-time { min-width: 48px; flex-shrink: 0; }
   .mobile-header .font-display { font-size: 17px !important; white-space: nowrap; }
+  .mobile-header .mobile-live-status { padding-left: 5px; padding-right: 5px; }
   .mobile-header .btn-ghost {
     padding: 6px 6px !important;
     font-size: 9px !important;
@@ -1057,15 +1078,15 @@ small, .muted { font-size: 12px; color: var(--text-muted); }
     left: 10px !important;
     right: 10px !important;
     width: auto !important;
-    bottom: max(70px, env(safe-area-inset-bottom)) !important;
-    padding: 12px 12px max(12px, env(safe-area-inset-bottom)) !important;
+    bottom: calc(58px + env(safe-area-inset-bottom)) !important;
+    padding: 10px 10px max(10px, env(safe-area-inset-bottom)) !important;
     border-radius: 12px !important;
     overflow: hidden;
   }
   .mobile-frequency-ruler {
     left: 10px;
     right: 10px;
-    bottom: 182px;
+    bottom: calc(158px + env(safe-area-inset-bottom));
   }
   .mobile-scene-copy {
     position: fixed;
@@ -1100,6 +1121,8 @@ small, .muted { font-size: 12px; color: var(--text-muted); }
     letter-spacing: 0.06em;
   }
   .mobile-player > .flex {
+    display: grid !important;
+    grid-template-columns: 40px minmax(0, 1fr) auto auto;
     height: 78px !important;
     gap: 8px !important;
     padding-left: 4px !important;
@@ -1113,6 +1136,7 @@ small, .muted { font-size: 12px; color: var(--text-muted); }
   .mobile-player .btn-icon svg { width: 16px; height: 16px; }
   .mobile-player .mobile-play-button { width: 38px !important; height: 38px !important; }
   .mobile-player .truncate-1 { max-width: 116px; }
+  .mobile-player .mobile-frequency-readout { font-size: 8px; letter-spacing: 0.04em; }
   .creator-credit {
     right: auto;
     left: 50%;
@@ -1122,6 +1146,26 @@ small, .muted { font-size: 12px; color: var(--text-muted); }
   .drawer-header { padding-left: 16px !important; padding-right: 16px !important; }
   .station-grid { padding-left: 12px !important; padding-right: 12px !important; }
   .about-content { padding-left: 16px !important; padding-right: 16px !important; }
+}
+
+@media (max-width: 360px) {
+  .mobile-header { grid-template-columns: auto minmax(0, 1fr) auto; }
+  .mobile-header .mobile-live-status { display: none; }
+  .mobile-header .font-display { font-size: 16px !important; }
+  .mobile-header .btn-ghost { padding-left: 4px !important; padding-right: 4px !important; }
+  .mobile-player { left: 6px !important; right: 6px !important; padding-left: 7px !important; padding-right: 7px !important; }
+  .mobile-player > .flex { grid-template-columns: 36px minmax(0, 1fr) auto !important; gap: 5px !important; }
+  .mobile-player > .flex > button:first-child { width: 36px !important; height: 36px !important; }
+  .mobile-player .btn-icon { width: 28px !important; }
+  .mobile-player .mobile-play-button { width: 36px !important; height: 36px !important; }
+  .mobile-player .truncate-1 { max-width: 84px; }
+  .mobile-player .mobile-frequency-readout { display: none; }
+}
+
+@media (max-height: 620px) and (max-width: 768px) {
+  .mobile-scene-copy { top: 34%; }
+  .mobile-frequency-ruler { bottom: calc(150px + env(safe-area-inset-bottom)); }
+  .mobile-player > .flex { height: 62px !important; }
 }
 
 /* ── Safe Area ── */
