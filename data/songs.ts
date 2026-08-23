@@ -42,26 +42,46 @@ export const RADIO_CHANNELS: Record<number, { name: string; categories: string[]
   104.9: { name: "Heartbreak", categories: [], moods: ["melancholic", "emotional", "intense", "longing"] },
 };
 
+const NINETIES_SONG_IDS = [
+  "aa-chal-ke-tujhe",
+  "aaja-piya-tohe-pyar-doon",
+  "abhi-na-jao-chhod-kar",
+  "ajib-dastan-hai-yeh",
+  "bade-achhe-lagte-hain",
+  "itna-na-mujhse-tu-pyar-badha-chhaya",
+  "lata-ji-hum-tere-pyar-mein-sara-aalam",
+  "sar-jo-tera-chakraye-pyaasa",
+  "tera-mera-pyar-amar",
+  "yeh-raaten-yeh-mausam-dilli-ka-thug",
+] as const;
+
 export function getFrequencyQueues(): Record<string, Song[]> {
   const queues: Record<string, Song[]> = {};
 
-  RADIO_FREQUENCIES.forEach((frequency) => {
-    const channel = RADIO_CHANNELS[frequency];
-    const ranked = SONGS
-      .filter((song) => Boolean(R2_AUDIO_FILES[song.id]))
-      .map((song, index) => {
-        const categoryScore = song.category?.filter((category) =>
-          channel.categories.includes(category)
-        ).length ?? 0;
-        const moodScore = song.mood?.filter((mood) =>
-          channel.moods.includes(mood)
-        ).length ?? 0;
-        return { song, index, score: categoryScore * 3 + moodScore };
-      })
-      .sort((a, b) => b.score - a.score || a.index - b.index);
+  const availableSongs = SONGS.filter((song) => Boolean(R2_AUDIO_FILES[song.id]));
+  const ninetiesSongs = availableSongs.filter((song) => NINETIES_SONG_IDS.includes(song.id as (typeof NINETIES_SONG_IDS)[number]));
+  const earlyTwoThousandsSongs = availableSongs.filter(
+    (song) => !NINETIES_SONG_IDS.includes(song.id as (typeof NINETIES_SONG_IDS)[number]) && song.year !== undefined && song.year <= 2013
+  );
+  const newerSongs = availableSongs.filter(
+    (song) => !NINETIES_SONG_IDS.includes(song.id as (typeof NINETIES_SONG_IDS)[number]) && !earlyTwoThousandsSongs.includes(song)
+  );
+  const frequencyPools = [
+    ninetiesSongs,
+    ninetiesSongs,
+    earlyTwoThousandsSongs,
+    earlyTwoThousandsSongs,
+    earlyTwoThousandsSongs,
+    newerSongs,
+    newerSongs,
+    newerSongs,
+  ];
 
-    const selected = ranked.slice(0, 6).map(({ song }) => song);
-    queues[String(frequency)] = selected;
+  RADIO_FREQUENCIES.forEach((frequency, frequencyIndex) => {
+    queues[String(frequency)] = frequencyPools[frequencyIndex].filter(
+      (_, songIndex) => songIndex % (frequencyIndex < 2 ? 2 : frequencyIndex < 5 ? 3 : 3) ===
+        (frequencyIndex < 2 ? frequencyIndex : frequencyIndex < 5 ? frequencyIndex - 2 : frequencyIndex - 5)
+    );
   });
 
   return queues;
@@ -119,6 +139,16 @@ export const STATIONS: Station[] = [
 ];
 
 export const SONGS: Song[] = [
+  { id: "aa-chal-ke-tujhe", title: "Aa Chal Ke Tujhe", artist: "Kishore Kumar", year: 1967, mood: ["nostalgic", "tender", "reflective"], category: ["1990s", "classic", "love"], youtubeId: null },
+  { id: "aaja-piya-tohe-pyar-doon", title: "Aaja Piya Tohe Pyar Doon", artist: "Lata Mangeshkar", year: 1967, mood: ["romantic", "tender", "nostalgic"], category: ["1990s", "classic", "love"], youtubeId: null },
+  { id: "abhi-na-jao-chhod-kar", title: "Abhi Na Jao Chhod Kar", artist: "Asha Bhosle, Mohammed Rafi", year: 1961, mood: ["romantic", "tender", "nostalgic"], category: ["1990s", "classic", "love"], youtubeId: null },
+  { id: "ajib-dastan-hai-yeh", title: "Ajib Dastan Hai Yeh", artist: "Lata Mangeshkar", year: 1960, mood: ["melancholic", "romantic", "nostalgic"], category: ["1990s", "classic", "love"], youtubeId: null },
+  { id: "bade-achhe-lagte-hain", title: "Bade Achhe Lagte Hain", artist: "Amit Kumar, Kalyani Mitra", year: 1976, mood: ["romantic", "tender", "nostalgic"], category: ["1990s", "classic", "love"], youtubeId: null },
+  { id: "itna-na-mujhse-tu-pyar-badha-chhaya", title: "Itna Na Mujhse Tu Pyar Badha Chhaya", artist: "Talat Mahmood, Lata Mangeshkar", year: 1959, mood: ["romantic", "tender", "nostalgic"], category: ["1990s", "classic", "love"], youtubeId: null },
+  { id: "lata-ji-hum-tere-pyar-mein-sara-aalam", title: "Hum Tere Pyar Mein Sara Aalam", artist: "Lata Mangeshkar", year: 1967, mood: ["romantic", "tender", "nostalgic"], category: ["1990s", "classic", "love"], youtubeId: null },
+  { id: "sar-jo-tera-chakraye-pyaasa", title: "Sar Jo Tera Chakraye", artist: "Mohammed Rafi", year: 1957, mood: ["playful", "nostalgic", "happy"], category: ["1990s", "classic", "party"], youtubeId: null },
+  { id: "tera-mera-pyar-amar", title: "Tera Mera Pyar Amar", artist: "Lata Mangeshkar", year: 1962, mood: ["romantic", "melancholic", "nostalgic"], category: ["1990s", "classic", "love"], youtubeId: null },
+  { id: "yeh-raaten-yeh-mausam-dilli-ka-thug", title: "Yeh Raaten Yeh Mausam", artist: "Kishore Kumar, Asha Bhosle", year: 1958, mood: ["romantic", "nostalgic", "dreamy"], category: ["1990s", "classic", "love"], youtubeId: null },
   {
     id: "sitaare",
     title: "Sitaare",
@@ -269,6 +299,16 @@ export const SONGS: Song[] = [
 const R2_AUDIO_BASE_URL = "https://pub-5ef359fff5274b2d95f090ecc084afcd.r2.dev";
 
 const R2_AUDIO_FILES: Record<string, string> = {
+  "aa-chal-ke-tujhe": "Aa-Chal-Ke-Tujhe-with-Lyrics-आ-चल-के-तुझे-के-बोल-Door-Gagan-Ki-Chhaon-Mein.mp3",
+  "aaja-piya-tohe-pyar-doon": "Aaja-Piya-Tohe-Pyar-Doon-Lata-Mangeshkar-R.D.-Burman-Majrooh-Sultanpuri-Old-Is-Gold.mp3",
+  "abhi-na-jao-chhod-kar": "Abhi Na Jao Chhod Kar Hum Dono 320 Kbps.mp3",
+  "ajib-dastan-hai-yeh": "Ajib-Dastan-Hai-Yeh-Video-Song-Dil-Apna-Aur-Preet-Parai-Raaj-Kumar-Meena-K-Lata-Mangeshkar.mp3",
+  "bade-achhe-lagte-hain": "Bade Achhe Lagte Hain Balika Badhu 320 Kbps.mp3",
+  "itna-na-mujhse-tu-pyar-badha-chhaya": "Itna Na Mujhse Tu Pyar Badha Chhaya 320 Kbps.mp3",
+  "lata-ji-hum-tere-pyar-mein-sara-aalam": "Lata_ji_-_Hum_tere_pyar_mein_sara_aalam_(mp3.pm).mp3",
+  "sar-jo-tera-chakraye-pyaasa": "Sar Jo Tera Chakraye Pyaasa 320 Kbps.mp3",
+  "tera-mera-pyar-amar": "Tera Mera Pyar Amar Asli Naqli 320 Kbps.mp3",
+  "yeh-raaten-yeh-mausam-dilli-ka-thug": "Yeh Raaten Yeh Mausam Dilli Ka Thug 320 Kbps.mp3",
   "arz-kiya-hai": "Arz Kiya Hai_320(KoshalWorld.Com).mp3",
   bahara: "Bahara I Hate Luv Storys 320 Kbps.mp3",
   boyfriend: "Boyfriend - Karan Aujla.mp3",
