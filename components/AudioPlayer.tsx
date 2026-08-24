@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 
 export interface AudioPlayerHandle {
   play: () => Promise<void>;
@@ -38,6 +38,9 @@ export default function AudioPlayer({
   const audioRef = useRef<HTMLAudioElement>(null);
   const endedUrlRef = useRef<string | null>(null);
   const isPlayingRef = useRef(isPlaying);
+  const sourceChangingRef = useRef(false);
+  const retryCountRef = useRef(0);
+  const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     isPlayingRef.current = isPlaying;
@@ -65,9 +68,15 @@ export default function AudioPlayer({
     if (!audio) return;
 
     endedUrlRef.current = null;
+    retryCountRef.current = 0;
+    sourceChangingRef.current = true;
     audio.load();
     if (isPlayingRef.current) {
-      audio.play().catch(() => undefined);
+      audio.play().catch(() => undefined).finally(() => {
+        sourceChangingRef.current = false;
+      });
+    } else {
+      sourceChangingRef.current = false;
     }
   }, [audioUrl]);
 
@@ -89,6 +98,23 @@ export default function AudioPlayer({
     onEnded();
   };
 
+  const handleAudioError = useCallback(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    if (retryCountRef.current < 3) {
+      retryCountRef.current += 1;
+      if (retryTimerRef.current) clearTimeout(retryTimerRef.current);
+      retryTimerRef.current = setTimeout(() => {
+        audio.load();
+        if (isPlayingRef.current) audio.play().catch(() => undefined);
+      }, retryCountRef.current * 750);
+      return;
+    }
+
+    onError();
+  }, [onError]);
+
   return (
     <audio
       ref={audioRef}
@@ -96,14 +122,16 @@ export default function AudioPlayer({
       preload="auto"
       onCanPlay={onReady}
       onPlaying={onPlaying}
-      onPause={onPause}
+      onPause={() => {
+        if (!sourceChangingRef.current) onPause();
+      }}
       onWaiting={onWaiting}
       onEnded={handleEnded}
       onTimeUpdate={(event) => {
         const audio = event.currentTarget;
         onTimeUpdate(audio.currentTime, audio.duration || 0);
       }}
-      onError={onError}
+      onError={handleAudioError}
       style={{ position: "fixed", width: 1, height: 1, opacity: 0.01 }}
       aria-label="Soulstation audio"
     />
