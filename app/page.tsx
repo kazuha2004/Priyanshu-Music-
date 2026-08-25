@@ -136,10 +136,6 @@ export default function Home() {
     setIsBuffering(false);
   }, []);
 
-  const handleAudioPause = useCallback(() => {
-    setIsPlaying(false);
-  }, []);
-
   const handleAudioWaiting = useCallback(() => {
     setIsBuffering(true);
   }, []);
@@ -390,7 +386,6 @@ export default function Home() {
           volume={volume}
           onReady={handlePlayerReady}
           onPlaying={handleAudioPlaying}
-          onPause={handleAudioPause}
           onWaiting={handleAudioWaiting}
           onEnded={handleNext}
           onTimeUpdate={handleTimeUpdate}

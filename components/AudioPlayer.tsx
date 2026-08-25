@@ -14,7 +14,6 @@ interface AudioPlayerProps {
   volume: number;
   onReady: () => void;
   onPlaying: () => void;
-  onPause: () => void;
   onWaiting: () => void;
   onEnded: () => void;
   onTimeUpdate: (current: number, duration: number) => void;
@@ -28,7 +27,6 @@ export default function AudioPlayer({
   volume,
   onReady,
   onPlaying,
-  onPause,
   onWaiting,
   onEnded,
   onTimeUpdate,
@@ -38,7 +36,6 @@ export default function AudioPlayer({
   const audioRef = useRef<HTMLAudioElement>(null);
   const endedUrlRef = useRef<string | null>(null);
   const isPlayingRef = useRef(isPlaying);
-  const sourceChangingRef = useRef(false);
   const retryCountRef = useRef(0);
   const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -63,20 +60,19 @@ export default function AudioPlayer({
     };
   }, [playerRef]);
 
+  useEffect(() => () => {
+    if (retryTimerRef.current) clearTimeout(retryTimerRef.current);
+  }, []);
+
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
 
     endedUrlRef.current = null;
     retryCountRef.current = 0;
-    sourceChangingRef.current = true;
     audio.load();
     if (isPlayingRef.current) {
-      audio.play().catch(() => undefined).finally(() => {
-        sourceChangingRef.current = false;
-      });
-    } else {
-      sourceChangingRef.current = false;
+      audio.play().catch(() => undefined);
     }
   }, [audioUrl]);
 
@@ -86,11 +82,11 @@ export default function AudioPlayer({
 
     audio.volume = volume / 100;
     if (isPlaying) {
-      audio.play().catch(() => onPause());
+      audio.play().catch(() => undefined);
     } else {
       audio.pause();
     }
-  }, [isPlaying, onPause, volume]);
+  }, [isPlaying, volume]);
 
   const handleEnded = () => {
     if (endedUrlRef.current === audioUrl) return;
@@ -122,9 +118,6 @@ export default function AudioPlayer({
       preload="auto"
       onCanPlay={onReady}
       onPlaying={onPlaying}
-      onPause={() => {
-        if (!sourceChangingRef.current) onPause();
-      }}
       onWaiting={onWaiting}
       onEnded={handleEnded}
       onTimeUpdate={(event) => {
